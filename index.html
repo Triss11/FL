@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Model Upload & Download</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f8f9fa;
+    }
+    h2 {
+      color: #333;
+    }
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 400px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .section {
+      margin-bottom: 20px;
+    }
+    input[type="file"] {
+      margin-top: 10px;
+    }
+    .download-btn {
+      display: inline-block;
+      padding: 10px 15px;
+      background: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background 0.3s ease;
+    }
+    .download-btn:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Upload / Download Model</h2>
+
+    <!-- Upload Section -->
+    <div class="section">
+      <h3>Upload Model</h3>
+      <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="modelFile" accept=".keras,.h5,.zip">
+        <br><br>
+        <button type="submit">Upload</button>
+      </form>
+    </div>
+
+    <!-- Download Section -->
+    <div class="section">
+      <h3>Download Model</h3>
+      <a class="download-btn" href="M.Tech_Dissertation/my_model.keras" download>
+        Download my_model.keras
+      </a>
+    </div>
+  </div>
+</body>
+</html>
