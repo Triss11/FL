@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>FL Global & Client Weights Manager (GitHub)</title>
+  <title>FL Global & Client Weights Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root { color-scheme: light dark; }
-    * { box-sizing: border-box; }
     body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; margin: 2rem; max-width: 1100px; }
     h1 { margin-bottom: .5rem; }
     h2 { margin: 1.5rem 0 .5rem; }
@@ -14,9 +13,7 @@
     fieldset { border: 1px solid #8883; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
     legend { font-weight: 600; padding: 0 .5rem; }
     label { display: block; font-size: .95rem; margin: .5rem 0 .25rem; }
-    input[type="text"], input[type="password"] {
-      width: 100%; padding: .6rem .7rem; border-radius: 10px; border: 1px solid #8883;
-    }
+    input[type="text"], input[type="password"] { width: 100%; padding: .6rem .7rem; border-radius: 10px; border: 1px solid #8883; }
     input[type="file"] { margin-top: .25rem; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
@@ -24,20 +21,18 @@
     button.primary { background: #2ea043; color: white; border: none; }
     button.warn { background: #d63636; color: white; border: none; }
     .muted { opacity: .85; color: #666 }
-    #status { margin-top: 1rem; white-space: pre-wrap; padding: .75rem 1rem; border-radius: 12px; background: #00000008; }
-    progress { width: 100%; height: 10px; }
     table { width: 100%; border-collapse: collapse; margin-top: .5rem; }
     th, td { padding: .6rem .5rem; border-bottom: 1px solid #8883; text-align: left; }
     th { background: #00000008; }
     code { background: #00000010; padding: .05rem .3rem; border-radius: 6px; }
     .badge { display:inline-block; padding:.2rem .5rem; border-radius: 999px; background:#00000012; font-size:.8rem }
     .flex { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
-    .section { margin-bottom: 1.5rem; }
+    progress { width: 100%; height: 10px; }
   </style>
 </head>
 <body>
-  <h1>Federated Learning – Global & Client Weights (GitHub)</h1>
-  <p class="hint">Use a fine-grained GitHub token with <b>Contents: Read and write</b> on your private repo. Keep this page local for best security.</p>
+  <h1>Federated Learning – Global & Client Weights</h1>
+  <p class="hint">Keep this page local. Use a fine-grained GitHub token with <b>Contents: Read and write</b> access to your private repo.</p>
 
   <!-- Shared GitHub config -->
   <fieldset>
@@ -69,442 +64,169 @@
   </fieldset>
 
   <!-- 1) Global model download -->
-  <div class="section">
-    <h2>1) Download Global Model</h2>
-    <fieldset>
-      <legend>Global Model (.keras)</legend>
-      <div class="row">
-        <div>
-          <label for="globalPath">Path in repo</label>
-          <input id="globalPath" type="text" value="M.Tech_Dissertation/my_model.keras" />
-          <small class="muted">Example: <code>M.Tech_Dissertation/my_model.keras</code></small>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button class="primary" id="downloadGlobal">Download Global Model</button>
-        </div>
+  <h2>1) Download Global Model</h2>
+  <fieldset>
+    <legend>Global Model (.keras)</legend>
+    <div class="row">
+      <div>
+        <label for="globalPath">Path in repo</label>
+        <input id="globalPath" type="text" value="M.Tech_Dissertation/my_model.keras" />
       </div>
-      <div id="globalStatus" class="muted"></div>
-    </fieldset>
-  </div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="primary" id="downloadGlobal">Download Global Model</button>
+      </div>
+    </div>
+    <div id="globalStatus" class="muted"></div>
+  </fieldset>
 
   <!-- 2) Client weights upload -->
-  <div class="section">
-    <h2>2) Upload Client Weights</h2>
-    <fieldset>
-      <legend>Upload weights (*.weights.h5 / .npz / etc.)</legend>
-      <div class="row3">
-        <div>
-          <label for="clientId">Client ID</label>
-          <input id="clientId" type="text" placeholder="client1" />
-        </div>
-        <div>
-          <label for="roundNum">Round</label>
-          <input id="roundNum" type="text" placeholder="1" />
-        </div>
-        <div>
-          <label for="weightsPath">Path in repo</label>
-          <input id="weightsPath" type="text" value="model/" />
-          <small class="muted">We will auto-name: <code>clientID_roundN.weights.h5</code> under this folder</small>
-        </div>
+  <h2>2) Upload Client Weights</h2>
+  <fieldset>
+    <legend>Upload weights</legend>
+    <div class="row3">
+      <div>
+        <label for="clientId">Client ID</label>
+        <input id="clientId" type="text" placeholder="client1" />
       </div>
-
-      <label for="file">Select weights file</label>
-      <input id="file" type="file" accept=".weights.h5,.h5,.npz,.ckpt,.bin" required />
-      <div id="fileInfo" class="muted"></div>
-
-      <label for="commitMsg">Commit message</label>
-      <input id="commitMsg" type="text" value="Upload federated client weights" />
-
-      <label style="margin-top:.5rem; display:block;">
-        <input id="viaPR" type="checkbox" />
-        Create a new branch and open a Pull Request (use if target branch is protected)
-      </label>
-
-      <div class="flex" style="margin-top:.5rem;">
-        <button class="primary" id="uploadBtn">Upload Weights</button>
-        <button type="button" id="listRepoWeights">Refresh table from repo</button>
+      <div>
+        <label for="roundNum">Round</label>
+        <input id="roundNum" type="text" placeholder="1" />
       </div>
-      <div style="margin-top:.5rem;"><progress id="prog" value="0" max="100" hidden></progress></div>
-      <div id="uploadStatus" class="muted"></div>
-    </fieldset>
-  </div>
-
-  <!-- 3) Download weights + registry table -->
-  <div class="section">
-    <h2>3) Client Weights Registry & Downloads</h2>
-    <fieldset>
-      <legend>Registry</legend>
-      <div class="flex" style="justify-content:space-between;">
-        <div class="muted">Tracks uploaded client weights. Stored locally and can be refreshed from the repo.</div>
-        <div class="flex">
-          <button type="button" id="clearLocal">Clear local registry</button>
-        </div>
+      <div>
+        <label for="weightsPath">Path in repo</label>
+        <input id="weightsPath" type="text" value="model/" />
       </div>
-      <table id="weightsTable">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Client</th>
-            <th>Round</th>
-            <th>File</th>
-            <th>Size</th>
-            <th>Repo Path</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody><!-- rows injected dynamically --></tbody>
-      </table>
-      <div id="tableStatus" class="muted"></div>
-    </fieldset>
-  </div>
+    </div>
+    <label for="file">Select weights file</label>
+    <input id="file" type="file" accept=".weights.h5,.h5,.npz,.ckpt,.bin" required />
+    <div id="fileInfo" class="muted"></div>
 
-  <div id="status"></div>
+    <label for="commitMsg">Commit message</label>
+    <input id="commitMsg" type="text" value="Upload federated client weights" />
 
-  <script>
-    // ===== Utilities =====
-    const el = (id) => document.getElementById(id);
-    const statusBox = el('status');
-    const prog = el('prog');
+    <div class="flex" style="margin-top:.5rem;">
+      <button class="primary" id="uploadBtn">Upload Weights</button>
+      <button type="button" id="listRepoWeights">Refresh Table</button>
+    </div>
+    <div style="margin-top:.5rem;"><progress id="prog" value="0" max="100" hidden></progress></div>
+    <div id="uploadStatus" class="muted"></div>
+  </fieldset>
 
-    function saveLocalRegistry(reg) {
-      localStorage.setItem('flWeightsRegistry', JSON.stringify(reg || []));
-    }
-    function loadLocalRegistry() {
-      try {
-        return JSON.parse(localStorage.getItem('flWeightsRegistry') || '[]');
-      } catch { return []; }
-    }
+  <!-- 3) Table -->
+  <h2>3) Client Weights Registry & Downloads</h2>
+  <fieldset>
+    <legend>Registry</legend>
+    <table id="weightsTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Client</th>
+          <th>Round</th>
+          <th>File</th>
+          <th>Size</th>
+          <th>Path</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div id="tableStatus" class="muted"></div>
+  </fieldset>
 
-    function renderTable(rows) {
-      const tbody = el('weightsTable').querySelector('tbody');
-      tbody.innerHTML = '';
-      rows.forEach((r, i) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${i+1}</td>
-          <td><span class="badge">${r.client || '-'}</span></td>
-          <td>${r.round || '-'}</td>
-          <td>${r.fileName}</td>
-          <td>${r.sizeMB ? r.sizeMB.toFixed(2) + ' MB' : '-'}</td>
-          <td><code>${r.repoPath}</code></td>
-          <td class="flex">
-            <button data-idx="${i}" class="dlBtn">Download</button>
-            ${r.htmlUrl ? `<a target="_blank" rel="noopener" href="${r.htmlUrl}"><button>View</button></a>` : ''}
-            <button data-idx="${i}" class="delBtn warn">Remove</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+<script>
+const el = id => document.getElementById(id);
 
-      // wire buttons
-      tbody.querySelectorAll('.dlBtn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const idx = Number(btn.getAttribute('data-idx'));
-          const reg = loadLocalRegistry();
-          const row = reg[idx];
-          if (row) {
-            try {
-              await downloadFromRepo(row.repoPath, row.fileName);
-            } catch (e) {
-              alert('Download failed: ' + e.message);
-            }
-          }
-        });
-      });
-      tbody.querySelectorAll('.delBtn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const idx = Number(btn.getAttribute('data-idx'));
-          const reg = loadLocalRegistry();
-          reg.splice(idx, 1);
-          saveLocalRegistry(reg);
-          renderTable(reg);
-        });
-      });
-    }
+function saveRegistry(reg) { localStorage.setItem('flRegistry', JSON.stringify(reg)); }
+function loadRegistry() { return JSON.parse(localStorage.getItem('flRegistry') || '[]'); }
+function renderTable(reg) {
+  const tbody = el('weightsTable').querySelector('tbody');
+  tbody.innerHTML = '';
+  reg.forEach((r,i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${r.client}</td>
+      <td>${r.round}</td>
+      <td>${r.fileName}</td>
+      <td>${r.sizeMB ? r.sizeMB.toFixed(2)+' MB':''}</td>
+      <td><code>${r.repoPath}</code></td>
+      <td>
+        <button onclick="downloadFromRepo('${r.repoPath}','${r.fileName}')">Download</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
 
-    // chunked base64 for big files
-    function base64FromArrayBuffer(arrayBuffer) {
-      const chunkSize = 0x8000;
-      const bytes = new Uint8Array(arrayBuffer);
-      let binary = '';
-      for (let i = 0; i < bytes.length; i += chunkSize) {
-        const chunk = bytes.subarray(i, i + chunkSize);
-        binary += String.fromCharCode.apply(null, chunk);
-      }
-      return btoa(binary);
-    }
+async function gh(url, token, options={}) {
+  const res = await fetch(url, {headers:{Authorization:`Bearer ${token}`,Accept:'application/vnd.github+json'},...options});
+  if(!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+async function getFileMeta({token,owner,repo,path,ref}) {
+  const url=`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${ref}`;
+  const r=await fetch(url,{headers:{Authorization:`Bearer ${token}`,Accept:'application/vnd.github+json'}});
+  if(r.status===404) return null;
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function putFile({token,owner,repo,path,branch,contentB64,message,sha}) {
+  const url=`https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+  const res=await fetch(url,{method:'PUT',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json',Accept:'application/vnd.github+json'},body:JSON.stringify({message,content:contentB64,branch,sha})});
+  if(!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+function base64FromArrayBuffer(buf) {
+  const chunk=0x8000,bytes=new Uint8Array(buf); let bin='';
+  for(let i=0;i<bytes.length;i+=chunk){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk));}
+  return btoa(bin);
+}
 
-    // ===== GitHub API helpers =====
-    async function gh(url, token, options = {}) {
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' },
-        ...options
-      });
-      if (!res.ok) {
-        throw new Error(`${res.status} ${await res.text()}`);
-      }
-      return res.json();
-    }
+async function downloadFromRepo(repoPath,suggestedName){
+  const token=el('token').value.trim(),owner=el('owner').value.trim(),repo=el('repo').value.trim(),branch=el('branch').value.trim();
+  const url=`https://api.github.com/repos/${owner}/${repo}/contents/${repoPath}?ref=${branch}`;
+  const res=await fetch(url,{headers:{Authorization:`Bearer ${token}`,Accept:'application/vnd.github.raw'}});
+  if(!res.ok) throw new Error(await res.text());
+  const blob=await res.blob(); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=suggestedName||repoPath.split('/').pop();
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
 
-    async function getRepo({ token, owner, repo }) {
-      const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
-      return gh(url, token);
-    }
+el('file').addEventListener('change',()=>{const f=el('file').files?.[0]; if(f){el('fileInfo').textContent=`${f.name} (${(f.size/1024/1024).toFixed(2)} MB)`;}});
 
-    async function getRef({ token, owner, repo, ref }) {
-      const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/git/ref/${encodeURIComponent(ref)}`;
-      return gh(url, token);
-    }
+el('uploadBtn').addEventListener('click',async()=>{
+  const token=el('token').value.trim(),owner=el('owner').value.trim(),repo=el('repo').value.trim(),branch=el('branch').value.trim();
+  const client=el('clientId').value.trim()||'client',round=el('roundNum').value.trim()||'1',basePath=el('weightsPath').value.trim()||'model/';
+  const file=el('file').files?.[0]; if(!file) return;
+  const fileName=`${client}_round${round}.${file.name.split('.').pop()}`,repoPath=(basePath.endsWith('/')?basePath:basePath+'/')+fileName;
+  const buf=await file.arrayBuffer(),contentB64=base64FromArrayBuffer(buf);
+  await putFile({token,owner,repo,path:repoPath,branch,contentB64,message:el('commitMsg').value,sha:null});
+  const reg=loadRegistry(); reg.push({client,round,fileName,sizeMB:file.size/1024/1024,repoPath}); saveRegistry(reg); renderTable(reg);
+  el('uploadStatus').textContent='✅ Uploaded';
+});
 
-    async function createRef({ token, owner, repo, ref, sha }) {
-      const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/git/refs`;
-      return gh(url, token, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' },
-        body: JSON.stringify({ ref: `refs/${ref}`, sha })
-      });
-    }
+el('downloadGlobal').addEventListener('click',async()=>{
+  const path=el('globalPath').value.trim(); try{await downloadFromRepo(path,path.split('/').pop()); el('globalStatus').textContent='✅ Download started';}
+  catch(e){el('globalStatus').textContent='❌ '+e.message;}
+});
 
-    async function getFileMeta({ token, owner, repo, path, ref }) {
-      const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(path)}${ref ? `?ref=${encodeURIComponent(ref)}` : ''}`;
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }});
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
-      return res.json();
-    }
+el('checkAuth').addEventListener('click',async()=>{
+  try{await gh(`https://api.github.com/repos/${el('owner').value}/${el('repo').value}`,el('token').value); el('authStatus').textContent='✅ OK';}
+  catch(e){el('authStatus').textContent='❌ '+e.message;}
+});
 
-    async function putFileToGitHub({ token, owner, repo, path, branch, contentB64, message, sha }) {
-      const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(path)}`;
-      const body = { message: message || `Upload ${path}`, content: contentB64, branch };
-      if (sha) body.sha = sha;
-      const res = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/vnd.github+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      });
-      if (!res.ok) throw new Error(`Upload failed: ${res.status} ${await res.text()}`);
-      return res.json();
-    }
+el('listRepoWeights').addEventListener('click',async()=>{
+  const token=el('token').value.trim(),owner=el('owner').value.trim(),repo=el('repo').value.trim(),branch=el('branch').value.trim(),basePath=el('weightsPath').value.trim()||'model/';
+  try{const url=`https://api.github.com/repos/${owner}/${repo}/contents/${basePath}?ref=${branch}`;
+    const res=await fetch(url,{headers:{Authorization:`Bearer ${token}`,Accept:'application/vnd.github+json'}}); if(!res.ok) throw new Error(await res.text());
+    const data=await res.json(); const reg=loadRegistry();
+    data.forEach(it=>{if(it.type==='file'&&/\.(weights\.h5|npz|h5)$/i.test(it.name)){if(!reg.some(r=>r.repoPath===it.path)){reg.push({client:'-',round:'-',fileName:it.name,sizeMB:it.size/1024/1024,repoPath:it.path});}}});
+    saveRegistry(reg); renderTable(reg); el('tableStatus').textContent='✅ Refreshed';
+  }catch(e){el('tableStatus').textContent='❌ '+e.message;}
+});
 
-    async function listDirectory({ token, owner, repo, path, ref }) {
-      const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(path)}${ref ? `?ref=${encodeURIComponent(ref)}` : ''}`;
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }});
-      if (res.status === 404) return [];
-      if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    }
-
-    async function downloadFromRepo(repoPath, suggestedName) {
-      const token = el('token').value.trim();
-      const owner = el('owner').value.trim();
-      const repo = el('repo').value.trim();
-      const branch = el('branch').value.trim();
-      const meta = await getFileMeta({ token, owner, repo, path: repoPath, ref: `heads/${branch}` });
-      if (!meta || !meta.download_url) throw new Error('File not found or no download_url.');
-      const res = await fetch(meta.download_url, { headers: { Authorization: `Bearer ${token}` } }); // token not required for public; ok for private via API redirect
-      if (!res.ok) throw new Error('Download failed: ' + (await res.text()));
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = suggestedName || repoPath.split('/').pop();
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    // ===== UI wiring =====
-    el('file').addEventListener('change', () => {
-      const f = el('file').files?.[0];
-      if (!f) { el('fileInfo').textContent = ''; return; }
-      const mb = (f.size / (1024 * 1024)).toFixed(2);
-      el('fileInfo').textContent = `Selected: ${f.name} (${mb} MB)`;
-    });
-
-    el('checkAuth').addEventListener('click', async () => {
-      el('authStatus').textContent = 'Checking…';
-      try {
-        const token = el('token').value.trim();
-        const owner = el('owner').value.trim();
-        const repo = el('repo').value.trim();
-        await getRepo({ token, owner, repo });
-        el('authStatus').textContent = '✅ Access OK';
-      } catch (e) {
-        el('authStatus').textContent = '❌ ' + e.message;
-      }
-    });
-
-    // 1) Download global model
-    el('downloadGlobal').addEventListener('click', async () => {
-      const token = el('token').value.trim();
-      const owner = el('owner').value.trim();
-      const repo = el('repo').value.trim();
-      const branch = el('branch').value.trim();
-      const path = el('globalPath').value.trim();
-      const box = el('globalStatus');
-      box.textContent = 'Fetching metadata…';
-      try {
-        const meta = await getFileMeta({ token, owner, repo, path, ref: `heads/${branch}` });
-        if (!meta) throw new Error('File not found.');
-        await downloadFromRepo(path, path.split('/').pop());
-        box.textContent = '✅ Download started';
-      } catch (e) {
-        box.textContent = '❌ ' + e.message;
-      }
-    });
-
-    // 2) Upload client weights (and add to registry)
-    el('uploadBtn').addEventListener('click', async () => {
-      const token = el('token').value.trim();
-      const owner = el('owner').value.trim();
-      const repo = el('repo').value.trim();
-      const branch = el('branch').value.trim();
-      const clientId = (el('clientId').value.trim() || 'client');
-      const roundNum = (el('roundNum').value.trim() || '1');
-      const basePath = (el('weightsPath').value.trim() || 'model/');
-      const commitMsg = el('commitMsg').value.trim() || `Upload ${clientId} round ${roundNum} weights`;
-      const usePR = el('viaPR').checked;
-      const file = el('file').files?.[0];
-      const upStatus = el('uploadStatus');
-
-      if (!token || !owner || !repo || !branch || !file) {
-        upStatus.textContent = 'Please fill repo/auth fields and select a file.'; return;
-      }
-
-      // construct repo path and filename
-      const safeClient = clientId.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
-      const safeRound = String(roundNum).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
-      const ext = file.name.includes('.') ? file.name.split('.').pop() : 'weights.h5';
-      const fileName = `${safeClient}_round${safeRound}.${ext}`;
-      const repoPath = (basePath.endsWith('/') ? basePath : basePath + '/') + fileName;
-
-      try {
-        upStatus.textContent = '';
-        prog.hidden = false; prog.value = 10;
-
-        // Read + encode
-        const buf = await file.arrayBuffer();
-        prog.value = 35;
-        const contentB64 = base64FromArrayBuffer(buf);
-        prog.value = 60;
-
-        let targetBranch = branch;
-        let sha = null;
-
-        if (usePR) {
-          upStatus.textContent = 'Preparing PR branch…';
-          const repoInfo = await getRepo({ token, owner, repo });
-          const baseBranch = repoInfo.default_branch || 'main';
-          const baseRef = await getRef({ token, owner, repo, ref: `heads/${baseBranch}` });
-          const baseSha = baseRef.object?.sha;
-          const newBranch = `upload/${Date.now()}`;
-          await createRef({ token, owner, repo, ref: `heads/${newBranch}`, sha: baseSha });
-          targetBranch = newBranch;
-        } else {
-          upStatus.textContent = 'Checking if file exists…';
-          const meta = await getFileMeta({ token, owner, repo, path: repoPath, ref: `heads/${branch}` });
-          sha = meta?.sha || null;
-        }
-
-        prog.value = 80;
-        upStatus.textContent = 'Uploading…';
-        const result = await putFileToGitHub({
-          token, owner, repo, path: repoPath, branch: targetBranch, contentB64, message: commitMsg, sha
-        });
-
-        if (usePR) {
-          upStatus.textContent = 'Opening Pull Request…';
-          const repoInfo = await getRepo({ token, owner, repo });
-          const pr = await gh(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls`, token, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' },
-            body: JSON.stringify({
-              title: commitMsg,
-              head: targetBranch,
-              base: repoInfo.default_branch,
-              body: `Automated upload of \`${repoPath}\` for ${safeClient} (round ${safeRound}).`
-            })
-          });
-          upStatus.innerHTML = `✅ Uploaded to <code>${targetBranch}</code> & PR opened: <a href="${pr.html_url}" target="_blank" rel="noopener">#${pr.number}</a>`;
-        } else {
-          const fileUrl = result?.content?.html_url || `https://github.com/${owner}/${repo}/blob/${branch}/${repoPath}`;
-          upStatus.innerHTML = `✅ Uploaded: <a href="${fileUrl}" target="_blank" rel="noopener">${fileName}</a>`;
-        }
-        prog.value = 100;
-
-        // Add to local registry
-        const reg = loadLocalRegistry();
-        reg.push({
-          client: safeClient,
-          round: safeRound,
-          fileName,
-          sizeMB: file.size / (1024*1024),
-          repoPath,
-          htmlUrl: (usePR ? null : (result?.content?.html_url || null))
-        });
-        saveLocalRegistry(reg);
-        renderTable(reg);
-
-      } catch (e) {
-        upStatus.textContent = '❌ ' + e.message;
-      } finally {
-        setTimeout(() => { prog.hidden = true; }, 800);
-      }
-    });
-
-    // Refresh table by listing repo directory (model/)
-    el('listRepoWeights').addEventListener('click', async () => {
-      const token = el('token').value.trim();
-      const owner = el('owner').value.trim();
-      const repo = el('repo').value.trim();
-      const branch = el('branch').value.trim();
-      const basePath = (el('weightsPath').value.trim() || 'model/');
-
-      el('tableStatus').textContent = 'Scanning repo…';
-      try {
-        const items = await listDirectory({ token, owner, repo, path: basePath, ref: `heads/${branch}` });
-        const reg = loadLocalRegistry();
-        let added = 0;
-        for (const it of items) {
-          if (it.type === 'file' && /\.(weights\.h5|npz|ckpt|h5|bin)$/i.test(it.name)) {
-            const repoPath = it.path;
-            const already = reg.some(r => r.repoPath === repoPath);
-            if (!already) {
-              reg.push({
-                client: '-', round: '-', fileName: it.name,
-                sizeMB: it.size ? (it.size/1024/1024) : null,
-                repoPath, htmlUrl: it.html_url || null
-              });
-              added++;
-            }
-          }
-        }
-        if (added > 0) {
-          saveLocalRegistry(reg);
-        }
-        renderTable(reg);
-        el('tableStatus').textContent = added ? `Added ${added} new item(s) from repo.` : 'No new items found.';
-      } catch (e) {
-        el('tableStatus').textContent = '❌ ' + e.message;
-      }
-    });
-
-    el('clearLocal').addEventListener('click', () => {
-      if (confirm('Clear local registry?')) {
-        saveLocalRegistry([]);
-        renderTable([]);
-      }
-    });
-
-    // Initial render
-    renderTable(loadLocalRegistry());
-  </script>
+renderTable(loadRegistry());
+</script>
 </body>
 </html>
