@@ -1,65 +1,206 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Model Upload & Download</title>
+  <meta charset="utf-8" />
+  <title>Upload FL Weights to GitHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 40px;
-      background: #f8f9fa;
-    }
-    h2 {
-      color: #333;
-    }
-    .container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      width: 400px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
-    .section {
-      margin-bottom: 20px;
-    }
-    input[type="file"] {
-      margin-top: 10px;
-    }
-    .download-btn {
-      display: inline-block;
-      padding: 10px 15px;
-      background: #007bff;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background 0.3s ease;
-    }
-    .download-btn:hover {
-      background: #0056b3;
-    }
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 2rem; max-width: 800px; }
+    fieldset { border: 1px solid #8883; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    legend { font-weight: 600; padding: 0 .5rem; }
+    label { display: block; font-size: .95rem; margin: .5rem 0 .25rem; }
+    input[type="text"], input[type="password"] { width: 100%; padding: .6rem .7rem; border-radius: 10px; border: 1px solid #8883; }
+    input[type="file"] { margin-top: .25rem; }
+    small.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #666; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    button { padding: .8rem 1.1rem; border-radius: 12px; border: 1px solid #4443; cursor: pointer; font-weight: 600; }
+    .primary { background: #2ea043; color: white; border: none; }
+    .muted { opacity: .8; }
+    #status { margin-top: 1rem; white-space: pre-wrap; padding: .75rem 1rem; border-radius: 12px; background: #00000008; }
+    progress { width: 100%; height: 10px; }
+    .hint { font-size: .9rem; color: #666; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Upload / Download Model</h2>
+  <h1>Upload Federated Weights to GitHub</h1>
+  <p class="hint">
+    This uploads your file to <span class="mono">https://api.github.com/repos/&lt;owner&gt;/&lt;repo&gt;/contents/&lt;path&gt;</span>.
+    It <b>creates or updates</b> the file on the selected branch.
+  </p>
 
-    <!-- Upload Section -->
-    <div class="section">
-      <h3>Upload Model</h3>
-      <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="modelFile" accept=".keras,.h5,.zip">
-        <br><br>
-        <button type="submit">Upload</button>
-      </form>
-    </div>
+  <form id="uploadForm">
+    <fieldset>
+      <legend>GitHub Repo</legend>
+      <div class="row">
+        <div>
+          <label for="owner">Owner/Org</label>
+          <input id="owner" type="text" placeholder="Triss11" required />
+        </div>
+        <div>
+          <label for="repo">Repository</label>
+          <input id="repo" type="text" placeholder="FL" required />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="branch">Branch</label>
+          <input id="branch" type="text" value="main" required />
+        </div>
+        <div>
+          <label for="path">Path in repo</label>
+          <input id="path" type="text" value="model/my_model_weights_from_client.weights.h5" required />
+          <small class="mono">e.g., model/my_model_weights_from_client.weights.h5</small>
+        </div>
+      </div>
+    </fieldset>
 
-    <!-- Download Section -->
-    <div class="section">
-      <h3>Download Model</h3>
-      <a class="download-btn" href="M.Tech_Dissertation/my_model.keras" download>
-        Download my_model.keras
-      </a>
+    <fieldset>
+      <legend>Auth</legend>
+      <label for="token">GitHub Personal Access Token (fine-grained)</label>
+      <input id="token" type="password" placeholder="ghp_..." required />
+      <small class="hint">Requires <b>Contents: Read and write</b> on this repo. Keep this private.</small>
+    </fieldset>
+
+    <fieldset>
+      <legend>File</legend>
+      <label for="file">Select weights file</label>
+      <input id="file" type="file" accept=".weights.h5,.h5,.npz,.ckpt,.bin" required />
+      <div id="fileInfo" class="hint muted"></div>
+      <label for="message">Commit message</label>
+      <input id="message" type="text" value="Upload federated client weights" />
+      <div style="margin-top:.5rem;"><progress id="prog" value="0" max="100" hidden></progress></div>
+    </fieldset>
+
+    <div style="display:flex; gap:.5rem;">
+      <button class="primary" type="submit">Upload to GitHub</button>
+      <button type="button" id="checkBtn">Check if file exists</button>
     </div>
-  </div>
+  </form>
+
+  <div id="status" aria-live="polite"></div>
+
+  <script>
+    const el = (id) => document.getElementById(id);
+    const statusBox = el('status');
+    const prog = el('prog');
+
+    // Base64 encode ArrayBuffer safely (chunked)
+    function base64FromArrayBuffer(arrayBuffer) {
+      const chunkSize = 0x8000; // 32KB chunks
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, i + chunkSize);
+        binary += String.fromCharCode.apply(null, chunk);
+      }
+      return btoa(binary);
+    }
+
+    async function getFileSHA({ token, owner, repo, path, branch }) {
+      const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`;
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+      });
+      if (res.status === 404) return null; // does not exist
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`Failed to check file: ${res.status} ${txt}`);
+      }
+      const data = await res.json();
+      return data.sha || null;
+    }
+
+    async function putFileToGitHub({ token, owner, repo, path, branch, contentB64, message, sha }) {
+      const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(path)}`;
+      const body = {
+        message: message || `Upload ${path}`,
+        content: contentB64,
+        branch
+      };
+      if (sha) body.sha = sha; // include sha to update existing file
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`Upload failed: ${res.status} ${txt}`);
+      }
+      return res.json();
+    }
+
+    el('file').addEventListener('change', () => {
+      const f = el('file').files?.[0];
+      if (!f) { el('fileInfo').textContent = ''; return; }
+      const mb = (f.size / (1024 * 1024)).toFixed(2);
+      el('fileInfo').textContent = `Selected: ${f.name} (${mb} MB)`;
+    });
+
+    el('checkBtn').addEventListener('click', async () => {
+      statusBox.textContent = 'Checking for existing file...';
+      try {
+        const sha = await getFileSHA({
+          token: el('token').value.trim(),
+          owner: el('owner').value.trim(),
+          repo: el('repo').value.trim(),
+          path: el('path').value.trim(),
+          branch: el('branch').value.trim()
+        });
+        statusBox.textContent = sha ? `File exists. SHA: ${sha}` : 'File does not exist yet.';
+      } catch (e) {
+        statusBox.textContent = e.message;
+      }
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusBox.textContent = '';
+      prog.hidden = false; prog.value = 10;
+
+      const token = el('token').value.trim();
+      const owner = el('owner').value.trim();
+      const repo = el('repo').value.trim();
+      const path = el('path').value.trim();
+      const branch = el('branch').value.trim();
+      const message = el('message').value.trim();
+      const file = el('file').files?.[0];
+
+      if (!token || !owner || !repo || !path || !branch || !file) {
+        statusBox.textContent = 'Please fill all fields and select a file.';
+        prog.hidden = true; return;
+      }
+
+      try {
+        statusBox.textContent = 'Reading file...';
+        const buf = await file.arrayBuffer();
+        prog.value = 35;
+
+        statusBox.textContent = 'Encoding file to Base64... (large files may take time)';
+        const contentB64 = base64FromArrayBuffer(buf);
+        prog.value = 60;
+
+        statusBox.textContent = 'Checking if file exists on branch...';
+        const sha = await getFileSHA({ token, owner, repo, path, branch });
+        prog.value = 75;
+
+        statusBox.textContent = sha ? 'Updating existing file…' : 'Creating new file…';
+        const result = await putFileToGitHub({ token, owner, repo, path, branch, contentB64, message, sha });
+        prog.value = 100;
+
+        const fileUrl = result?.content?.html_url || `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
+        statusBox.innerHTML = `✅ Success! <a href="${fileUrl}" target="_blank" rel="noopener">View file on GitHub</a>`;
+      } catch (err) {
+        statusBox.textContent = `❌ ${err.message}`;
+      } finally {
+        setTimeout(() => { prog.hidden = true; }, 800);
+      }
+    });
+  </script>
 </body>
 </html>
