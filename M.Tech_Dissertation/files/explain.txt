@@ -1,0 +1,44 @@
+Round-by-Round Flow:
+Server starts with initial model weights
+
+This can be randomly initialized or pre-trained
+
+Server sends the current model parameters to all selected clients
+
+Each client:
+
+Loads the model locally
+
+Trains on its private data (e.g., malware logs, device activity, etc.)
+
+Updates its own model weights
+
+Each client sends:
+
+Updated weights (parameters)
+
+Optional metrics (e.g., accuracy, loss, data size)
+back to the server
+
+Server aggregates all client updates using a strategy like FedAvg:
+
+python
+Copy
+Edit
+global_weights = weighted_avg([client1, client2, client3])
+New global model weights are formed and sent back to clients for the next round
+
+🔁 Steps 3–6 are repeated for num_rounds
+
+✅ Summary:
+Role	Holds model?	Trains?	Aggregates?	Sends data?
+Server	✅ (weights only)	❌	✅	✅ to clients
+Clients	✅ (local model)	✅	❌	✅ to server
+
+📦 What the Server Never Sees:
+Raw data
+
+Client-specific details
+
+Only model weights and metrics are exchanged — so it’s privacy-preserving by design.
+
