@@ -1,0 +1,17 @@
+{
+  "user": "user_006",
+  "model_file": "global_lstm_model.keras",
+  "samples": 46,
+  "features": 52,
+  "is_lstm": true,
+  "epochs": 5,
+  "batch_size": 64,
+  "optimizer": "adam",
+  "loss": "binary_crossentropy",
+  "metrics": [
+    "accuracy"
+  ],
+  "train_seconds": 0.529,
+  "final_accuracy": 1.0,
+  "final_loss": 0.00013867864618077874
+}

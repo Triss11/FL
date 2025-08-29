@@ -1,0 +1,17 @@
+{
+  "user": "user_081",
+  "model_file": "global_FNN_model.keras",
+  "samples": 46,
+  "features": 52,
+  "is_lstm": false,
+  "epochs": 5,
+  "batch_size": 64,
+  "optimizer": "adam",
+  "loss": "binary_crossentropy",
+  "metrics": [
+    "accuracy"
+  ],
+  "train_seconds": 0.361,
+  "final_accuracy": 0.95652174949646,
+  "final_loss": 0.04849214106798172
+}
