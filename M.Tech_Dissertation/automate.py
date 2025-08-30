@@ -18,6 +18,15 @@ LOG_DIR     = Path("/Users/sohinikar/FL/M.Tech_Dissertation/logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 LOG_PATH    = LOG_DIR / f"pipeline_{time.strftime('%Y%m%d_%H%M%S')}.log"
 
+# --- New: Git hygiene settings ---
+IGNORE_PATTERNS = [
+    "M.Tech_Dissertation/Server/_client_cache_mc/",
+    "*.tar.gz",
+]
+USE_GIT_LFS = True  # track large model files automatically
+LFS_PATTERNS = ["*.keras", "*.weights.h5"]
+LARGE_WARN_BYTES = 90 * 1024 * 1024  # warn > 90MB; GitHub hard limit is 100MB
+
 def stream_cmd(cmd: List[str], cwd: Optional[Path] = None, env: Optional[dict] = None) -> None:
     """Run a command and stream stdout/stderr live to console + log."""
     print(f"➤ exec: {' '.join(shlex.quote(c) for c in cmd)}")
@@ -40,8 +49,8 @@ def stream_cmd(cmd: List[str], cwd: Optional[Path] = None, env: Optional[dict] =
         if p.returncode != 0:
             raise RuntimeError(f"Command failed ({p.returncode}): {' '.join(cmd)}")
 
-def run_cmd_capture(cmd: List[str], cwd: Optional[Path] = None) -> str:
-    cp = subprocess.run(cmd, cwd=str(cwd) if cwd else None, capture_output=True, text=True)
+def run_cmd_capture(cmd: List[str], cwd: Optional[Path] = None, env: Optional[dict] = None) -> str:
+    cp = subprocess.run(cmd, cwd=str(cwd) if cwd else None, env=env, capture_output=True, text=True)
     if cp.returncode != 0:
         raise RuntimeError(f"Command failed ({cp.returncode}): {' '.join(cmd)}\n{cp.stderr}")
     return (cp.stdout or "").strip()
@@ -100,11 +109,11 @@ def step2_run_notebook():
     print("\n=== Step 2: Execute global model notebook ===")
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "1"
-    # Prefer papermill; else nbconvert
     if have([sys.executable, "-m", "papermill", "--version"]):
         stream_cmd([sys.executable, "-m", "papermill", str(NOTEBOOK), str(NOTEBOOK), "-k", "python3"], env=env)
-    elif have(["jupyter", "--version"]):
-        stream_cmd(["jupyter", "nbconvert", "--to", "notebook", "--inplace", "--execute", str(NOTEBOOK)], env=env)
+    elif have([sys.executable, "-m", "jupyter", "--version"]):
+        # Use same interpreter env to avoid PATH mismatches
+        stream_cmd([sys.executable, "-m", "jupyter", "nbconvert", "--to", "notebook", "--inplace", "--execute", str(NOTEBOOK)], env=env)
     else:
         raise RuntimeError(
             "Neither papermill nor jupyter is installed.\n"
@@ -131,27 +140,101 @@ def step3_sync_models():
         raise RuntimeError("No .keras artifacts found to sync.")
     print("✅ Model sync complete.")
 
+# --- New: Git hygiene helpers to avoid >100MB errors ---
+def ensure_gitignore_and_untrack():
+    print("\n=== Git hygiene: ensure .gitignore and untrack caches/tarballs ===")
+    gi = REPO_ROOT / ".gitignore"
+    prev = gi.read_text() if gi.exists() else ""
+    lines = set(l.strip() for l in prev.splitlines() if l.strip())
+    changed = False
+    for pat in IGNORE_PATTERNS:
+        if pat not in lines:
+            lines.add(pat); changed = True
+    if changed:
+        gi.write_text("\n".join(sorted(lines)) + "\n")
+        print(f"• Updated .gitignore with: {IGNORE_PATTERNS}")
+    # Untrack any already-tracked files matching patterns
+    tracked = run_cmd_capture(["git", "ls-files"], cwd=REPO_ROOT).splitlines()
+    to_untrack = []
+    for path in tracked:
+        p = Path(path)
+        if any(p.match(pat) for pat in IGNORE_PATTERNS):
+            to_untrack.append(path)
+    if to_untrack:
+        # Use 'git rm --cached' in chunks
+        print(f"• Untracking {len(to_untrack)} ignored file(s)/path(s) from index…")
+        for chunk_start in range(0, len(to_untrack), 100):
+            chunk = to_untrack[chunk_start:chunk_start+100]
+            stream_cmd(["git", "rm", "--cached", "-r"] + chunk, cwd=REPO_ROOT)
+    print("✅ Git hygiene done.")
+
+def maybe_setup_git_lfs():
+    if not USE_GIT_LFS:
+        return
+    print("\n=== Git LFS: ensure tracking for model artifacts ===")
+    try:
+        # Install (idempotent)
+        stream_cmd(["git", "lfs", "install"], cwd=REPO_ROOT)
+        # Track patterns
+        for pat in LFS_PATTERNS:
+            stream_cmd(["git", "lfs", "track", pat], cwd=REPO_ROOT)
+        # Ensure .gitattributes is staged
+        gattr = REPO_ROOT / ".gitattributes"
+        if gattr.exists():
+            stream_cmd(["git", "add", str(gattr)], cwd=REPO_ROOT)
+        print("✅ Git LFS tracking ensured for:", ", ".join(LFS_PATTERNS))
+    except Exception as e:
+        print(f"⚠️  Git LFS setup skipped/failed: {e}")
+
+def warn_large_staged():
+    print("\n=== Check for large staged files (>90MB) ===")
+    staged = run_cmd_capture(["git", "diff", "--cached", "--name-only"], cwd=REPO_ROOT).splitlines()
+    big = []
+    for rel in staged:
+        ap = REPO_ROOT / rel
+        if ap.exists() and ap.is_file():
+            sz = ap.stat().st_size
+            if sz >= LARGE_WARN_BYTES:
+                big.append((rel, sz))
+    if big:
+        print("⚠️  Large files staged (consider LFS or ignore):")
+        for rel, sz in big:
+            print(f"   - {rel}  ({sz/1024/1024:.1f} MB)")
+    else:
+        print("No large staged files detected.")
+
 def step4_git_commit_push(message: str):
     print("\n=== Step 4: Git add / commit / push ===")
     # Basic checks
     run_cmd_capture(["git", "rev-parse", "--is-inside-work-tree"], cwd=REPO_ROOT)
     branch = run_cmd_capture(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=REPO_ROOT)
-    print(f"Repo: {REPO_ROOT}  Branch: {branch}")
-    # Add
+    remote = run_cmd_capture(["git", "remote", "get-url", "origin"], cwd=REPO_ROOT)
+    print(f"Repo: {REPO_ROOT}  Branch: {branch}  Remote: {remote}")
+
+    # Hygiene: ignore caches + tarballs, untrack them if already added
+    ensure_gitignore_and_untrack()
+    # LFS: track model artifacts (helps if they exceed size limits)
+    maybe_setup_git_lfs()
+
+    # Add / Commit
     stream_cmd(["git", "add", "-A"], cwd=REPO_ROOT)
-    # Commit if staged changes exist
+    warn_large_staged()
     staged = run_cmd_capture(["git", "diff", "--cached", "--name-only"], cwd=REPO_ROOT)
     if staged.strip():
         stream_cmd(["git", "commit", "-m", message], cwd=REPO_ROOT)
     else:
         print("ℹ️  No staged changes; skipping commit.")
-    # Push, auto rebase if needed
+
+    # Push, auto rebase if needed (with verbose trace)
+    env = os.environ.copy()
+    env["GIT_TRACE"] = "1"
+    env["GIT_CURL_VERBOSE"] = "1"
     try:
-        stream_cmd(["git", "push", "origin", branch], cwd=REPO_ROOT)
+        stream_cmd(["git", "push", "origin", branch], cwd=REPO_ROOT, env=env)
     except RuntimeError:
         print("↩️  Push rejected. Running 'git pull --rebase' and retrying…")
-        stream_cmd(["git", "pull", "--rebase", "origin", branch], cwd=REPO_ROOT)
-        stream_cmd(["git", "push", "origin", branch], cwd=REPO_ROOT)
+        stream_cmd(["git", "pull", "--rebase", "origin", branch], cwd=REPO_ROOT, env=env)
+        stream_cmd(["git", "push", "origin", branch], cwd=REPO_ROOT, env=env)
     print("✅ Git push complete.")
 
 def main():
