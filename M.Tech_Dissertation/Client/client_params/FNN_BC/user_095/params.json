@@ -11,7 +11,7 @@
   "metrics": [
     "accuracy"
   ],
-  "train_seconds": 0.373,
-  "final_accuracy": 1.0,
-  "final_loss": 0.0006402214057743549
+  "train_seconds": 0.353,
+  "final_accuracy": 0.9130434989929199,
+  "final_loss": 0.09133481979370117
 }
