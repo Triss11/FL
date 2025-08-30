@@ -18,3 +18,21 @@ Binary label mapping: {'Malware': 0.0, 'Benign': 1.0}
 [NbConvertApp] Writing 175605 bytes to /Users/sohinikar/FL/M.Tech_Dissertation/Server/Binary_malware_detection_centralized_ CIC-MalMem-2022.ipynb
 
 === RUN: git add -A (cwd=/Users/sohinikar/FL) ===
+
+=== RUN: git commit -m pipeline: datasets + global models | cfg=binary,lstm,128 | 2025-08-31 01:27:31 (cwd=/Users/sohinikar/FL) ===
+[main 1cf8ad2] pipeline: datasets + global models | cfg=binary,lstm,128 | 2025-08-31 01:27:31
+ 5 files changed, 801 insertions(+), 560 deletions(-)
+ create mode 100644 M.Tech_Dissertation/logs/pipeline_20250831_012717.log
+
+=== RUN: git push origin main (cwd=/Users/sohinikar/FL) ===
+remote: error: Trace: eed0ff9edeeb81647088ff9ba16fa1f17b2096a375e65d5bb4aff220a19e4a95        
+remote: error: See https://gh.io/lfs for more information.        
+remote: error: File M.Tech_Dissertation/Server/_client_cache_mc/FL_main.tar.gz is 182.33 MB; this exceeds GitHub's file size limit of 100.00 MB        
+remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.        
+To https://github.com/Triss11/FL.git
+ ! [remote rejected] main -> main (pre-receive hook declined)
+error: failed to push some refs to 'https://github.com/Triss11/FL.git'
+
+=== RUN: git pull --rebase origin main (cwd=/Users/sohinikar/FL) ===
+error: cannot pull with rebase: You have unstaged changes.
+error: please commit or stash them.
