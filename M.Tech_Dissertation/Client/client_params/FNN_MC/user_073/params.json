@@ -1,0 +1,17 @@
+{
+  "user": "user_073",
+  "model_file": "global_FNN_MC_model.keras",
+  "samples": 46,
+  "features": 52,
+  "is_lstm": false,
+  "epochs": 5,
+  "batch_size": 64,
+  "optimizer": "adam",
+  "loss": "sparse_categorical_crossentropy",
+  "metrics": [
+    "sparse_categorical_accuracy"
+  ],
+  "train_seconds": 0.434,
+  "final_loss": 0.5210226774215698,
+  "final_sparse_categorical_accuracy": 0.782608687877655
+}
