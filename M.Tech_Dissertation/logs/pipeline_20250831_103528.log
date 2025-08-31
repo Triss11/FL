@@ -15,10 +15,7 @@ Binary label mapping: {'Malware': 0.0, 'Benign': 1.0}
 
 === RUN: /opt/homebrew/anaconda3/bin/python -m jupyter nbconvert --to notebook --inplace --execute /Users/sohinikar/FL/M.Tech_Dissertation/Server/Binary_malware_detection_centralized_ CIC-MalMem-2022.ipynb (cwd=None) ===
 [NbConvertApp] Converting notebook /Users/sohinikar/FL/M.Tech_Dissertation/Server/Binary_malware_detection_centralized_ CIC-MalMem-2022.ipynb to notebook
-[NbConvertApp] Writing 183468 bytes to /Users/sohinikar/FL/M.Tech_Dissertation/Server/Binary_malware_detection_centralized_ CIC-MalMem-2022.ipynb
-
-=== RUN: git rm --cached -r M.Tech_Dissertation/Server/_client_cache_mc/FL_main.tar.gz (cwd=/Users/sohinikar/FL) ===
-rm 'M.Tech_Dissertation/Server/_client_cache_mc/FL_main.tar.gz'
+[NbConvertApp] Writing 166092 bytes to /Users/sohinikar/FL/M.Tech_Dissertation/Server/Binary_malware_detection_centralized_ CIC-MalMem-2022.ipynb
 
 === RUN: git lfs install (cwd=/Users/sohinikar/FL) ===
 git: 'lfs' is not a git command. See 'git --help'.
