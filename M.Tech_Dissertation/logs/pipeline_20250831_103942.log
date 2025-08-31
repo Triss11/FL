@@ -1,0 +1,26 @@
+
+=== RUN: /opt/homebrew/anaconda3/bin/python /Users/sohinikar/FL/M.Tech_Dissertation/make_users.py --config /Users/sohinikar/FL/M.Tech_Dissertation/params.py (cwd=None) ===
+Using config: /Users/sohinikar/FL/M.Tech_Dissertation/params.py
+Label column: Class
+Sampled CSV (exact 5888 removed): /Users/sohinikar/FL/M.Tech_Dissertation/Obfuscated-MalMem2022_sampled_5888.csv
+Remainder CSV (train+test): /Users/sohinikar/FL/M.Tech_Dissertation/Obfuscated-MalMem2022_train_and_test.csv  (rows: 52708)
+Dropping non-numeric feature columns (1): ['Category']
+Binary label mapping: {'Malware': 0.0, 'Benign': 1.0}
+✅ Done.
+   Users: 128 → base: /Users/sohinikar/FL/M.Tech_Dissertation/Client/data/LSTM_BC_test_data
+   Numeric features kept: 55
+   Per-user sizes (min/median/max): 46/46/46
+   Sampled X shape: (5888, 55), y shape: (5888,)
+   Note: reshape X to (N, 1, D) at training time.
+
+=== RUN: /opt/homebrew/anaconda3/bin/python -m jupyter nbconvert --to notebook --inplace --execute /Users/sohinikar/FL/M.Tech_Dissertation/Server/Binary_malware_detection_centralized_ CIC-MalMem-2022.ipynb (cwd=None) ===
+[NbConvertApp] Converting notebook /Users/sohinikar/FL/M.Tech_Dissertation/Server/Binary_malware_detection_centralized_ CIC-MalMem-2022.ipynb to notebook
+[NbConvertApp] Writing 179865 bytes to /Users/sohinikar/FL/M.Tech_Dissertation/Server/Binary_malware_detection_centralized_ CIC-MalMem-2022.ipynb
+
+=== RUN: git lfs install (cwd=/Users/sohinikar/FL) ===
+git: 'lfs' is not a git command. See 'git --help'.
+
+The most similar command is
+	log
+
+=== RUN: git add -A (cwd=/Users/sohinikar/FL) ===
